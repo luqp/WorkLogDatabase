@@ -1,0 +1,5 @@
+setup.py
+WorkLogDatabase.egg-info/PKG-INFO
+WorkLogDatabase.egg-info/SOURCES.txt
+WorkLogDatabase.egg-info/dependency_links.txt
+WorkLogDatabase.egg-info/top_level.txt
