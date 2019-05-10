@@ -8,10 +8,11 @@ db = SqliteDatabase('employees.db')
 
 class Employee(Model):
 
+    date = DateTimeField(default=datetime.datetime.now)
     name = CharField(max_length=255)
-    task_name = CharField(max_length=255)
-    time_work = DateTimeField(default=datetime.datetime.now)
     notes = TextField(default="")
+    task_name = CharField(max_length=255)
+    time_work = IntegerField()
 
     class Meta:
         database = db
