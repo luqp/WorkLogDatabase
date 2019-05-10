@@ -32,6 +32,11 @@ def wait_valid_input(field):
             return value
         print("Error")
 
+def collect_value(options):
+    field_to_search = menu_loop(options)
+    value = input("Value > ")
+    return field_to_search, value
+
 def view_data():
     search = {
         'n': "name",
@@ -39,18 +44,55 @@ def view_data():
         't': "time_work",
         'o': "others"
     }
-    field_to_search = menu_loop(search)
-    value = input("Value > ")
-    try:
-        employees = search_for_list(field_to_search, value)
-    except TypeError:
-        Printer.show_error_of_data()
-    except ValueError:
-        Printer.show_error_of_data()
-    else:
-        for employee in register.return_information_of(employees):
-            Printer.print_information(employee)
+    field_to_search, value = collect_value(search)
+    while True:
+        try:
+            employees = search_for_list(field_to_search, value)
+        except TypeError:
+            Printer.show_error_of_data()
+        except ValueError:
+            Printer.show_error_of_data()
+        else:
+            workers = []
+            for emp in employees:
+                workers.append(emp)
+            if not show_and_selecte_item(workers):
+                return
 
+
+def edit_fields(worker):
+    fields_to_edit = {
+        'd': "date",
+        'w': "task_name",
+        't': "time_work",
+        'n': "notes"
+    }
+    while True:
+        Printer.print_one_item(worker)
+        field_to_search, value = collect_value(fields_to_edit)
+        try:
+            update_field(worker, field_to_search, value)
+        except ValueError:
+            Printer.show_error_of_data()
+
+
+def show_and_selecte_item(employees):
+    for employee in employees:
+        group = handle_employee_data(employees)
+        Printer.print_information(group, employee)
+
+        choice = input(": ")
+        if choice == "q":
+            return False
+        elif choice == 'd':
+            Printer.prompting_by_delete()
+            Printer.show_result(delete_entry(employee, input(": ")))
+        elif choice == 'c':
+            Printer.print_one_item(employee)
+            input(": ")
+        elif choice == 'e':
+            edit_fields(employee)
+    return True
 
 
 def collect_data():
