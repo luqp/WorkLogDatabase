@@ -1,89 +1,84 @@
-from database.employees import db, Employee
-from work.work_log import WorkLog, Field
 
-work = WorkLog()
+import sys
 
-def print_by_name(field, value):
-    
-    workers = work.get_workers_by(field, value)
-    work.display_group(workers)
+from collections import OrderedDict
 
-def view_entries():
-    
-    field = input("Select field > ")
+from data_handler import *
+from console_ui.show_in_console import Printer
+
+fields = ["name", "task_name", "time_work", "notes" ]
 
 
-def edit_fields(worker):
+
+
+def menu_loop(options):
     while True:
-        for field in Field:
-            work.display_group([worker])
-            input_user = input(f"[S]elec {field.name}, [c]ontinue: ")
-            if input_user == "q":
-                return
+            choice = input("> ").lower().strip()
+            if choice == 'q':
+                break
+            if choice in options:
+                return options[choice]
 
-
-def options_to_delete(worker):
-    while True:
-        input_user = input(f"[S]elec varios, or 1: ")
-        if input_user == "s":
-            value = input("insert value > ")
-            print(work.delete_many(Field.NAME, value))
-        if input_user == '1':
-            print(work.delete_worker(worker))
-        if input_user == "q":
-            return
-
-
-def prompting_to_user(worker_id):
-    selection = input("[D]elete or [E]dit: ")
-    worker = Employee.get_by_id(worker_id)
-    if selection.upper() == "D":
-        options_to_delete(worker)
-    elif selection.upper() == "E":
-        edit_fields(worker)
-
-def add_entry():
-    work.add_to_database(collect_data())
-
-def collect_data():
-    worker = {}
-    for field in Field:
-        worker[field.value] = wait_valid_input(field.value)
-    
-    return worker
 
 def wait_valid_input(field):
     while True:
+        if field == "notes":
+            Printer.show_optional_value()
         value = input(f"{field} > ")
-        if value and not value.isspace() or value.lower() == "quit":
+
+        is_value = value if field != "notes" else True 
+
+        if is_value and not value.isspace():
             return value
         print("Error")
-        
-def select_an_option():
-    options = {
-        'A': add_entry,
-        'V': view_entries,
-        'D': options_to_delete,
-        'E': edit_fields
+
+def view_data():
+    search = {
+        'n': "name",
+        'd': "date",
+        't': "time_work",
+        'o': "others"
     }
-    print(f"[A]dd, [V]iew")
-    option = input("> ")
+    field_to_search = menu_loop(search)
+    value = input("Value > ")
+    try:
+        employees = search_for_list(field_to_search, value)
+    except TypeError:
+        Printer.show_error_of_data()
+    except ValueError:
+        Printer.show_error_of_data()
+    else:
+        for employee in register.return_information_of(employees):
+            Printer.print_information(employee)
 
 
 
-    print(f"[D]elect, [E]dit, [M]ove:")
-    option = input("> ")
+def collect_data():
+    worker = {}
+    for field in fields:
+        worker[field] = wait_valid_input(field)
+    return worker
+
+
+def add_entry():
+    try:
+        add_to_register(collect_data())
+    except ValueError:
+        Printer.show_error_of_data()
+    else:
+        Printer.added_successfully()
+
 
 
 def start_app():
-    if not len(Employee):
-        add_entry()
-    select_an_option()
-    print(len(Employee))
-    print("There are data :P")
+    actions = OrderedDict([
+        ('a', add_entry),
+        ('v', view_data)
+    ])
+    Printer.print_menu()
+    action = menu_loop(actions)
+    action()
 
 if __name__ == "__main__":
-    db.connect()
-    db.create_tables([Employee], safe=True)
-
+    init_conection()
     start_app()
